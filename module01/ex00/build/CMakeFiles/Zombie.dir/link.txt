@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/Zombie.dir/Zombie.cpp.o CMakeFiles/Zombie.dir/main.cpp.o  -o Zombie 

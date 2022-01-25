@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/karen.dir/Karen.cpp.o CMakeFiles/karen.dir/main.cpp.o  -o karen 

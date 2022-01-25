@@ -1,0 +1,3 @@
+/home/bcosters/cpp_academy/cpp_modules_upgraded/module01/ex00/build/CMakeFiles/rebuild_cache.dir
+/home/bcosters/cpp_academy/cpp_modules_upgraded/module01/ex00/build/CMakeFiles/edit_cache.dir
+/home/bcosters/cpp_academy/cpp_modules_upgraded/module01/ex00/build/CMakeFiles/Zombie.dir

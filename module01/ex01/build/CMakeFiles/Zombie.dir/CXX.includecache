@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/bcosters/cpp_academy/cpp_modules_upgraded/module01/ex01/Zombie.cpp
+Zombie.hpp
+/home/bcosters/cpp_academy/cpp_modules_upgraded/module01/ex01/Zombie.hpp
+
+/home/bcosters/cpp_academy/cpp_modules_upgraded/module01/ex01/Zombie.hpp
+iostream
+-
+string
+-
+
+/home/bcosters/cpp_academy/cpp_modules_upgraded/module01/ex01/main.cpp
+Zombie.hpp
+/home/bcosters/cpp_academy/cpp_modules_upgraded/module01/ex01/Zombie.hpp
+cstdlib
+-
+
