@@ -1,5 +1,5 @@
 #include "ClapTrap.hpp"
-#include "ScavTrap.hpp"
+#include "FragTrap.hpp"
 
 int main() {
     ClapTrap    joao;
@@ -10,16 +10,16 @@ int main() {
     johnny.attack("your mom");
     johnny.takeDamage(42);
     johnny.beRepaired(21);
-    ScavTrap    Joana;
-    Joana.guardGate();
+    FragTrap    Joana;
     Joana.attack("a big rock");
     Joana.takeDamage(3);
     Joana.beRepaired(69);
-    ScavTrap    Joana_plus("Better Joana");
-    Joana_plus.guardGate();
+    FragTrap    Joana_plus("Better Joana");
     Joana_plus.attack("a big rock");
     Joana_plus.takeDamage(3);
     Joana_plus.beRepaired(69);
+    Joana_plus.highFiveGuys();
     Joana = Joana_plus;
-    Joana.guardGate();
+    Joana.attack("Joana Plus");
+    Joana.highFiveGuys();
 }

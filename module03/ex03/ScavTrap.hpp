@@ -5,7 +5,7 @@
 # include <iostream>
 # include <string>
 
-class ScavTrap : public ClapTrap
+class ScavTrap : virtual public ClapTrap
 {
 
 	public:
@@ -13,7 +13,7 @@ class ScavTrap : public ClapTrap
 		ScavTrap();
 		ScavTrap(std::string const & name);
 		ScavTrap( ScavTrap const & src );
-		~ScavTrap();
+		virtual ~ScavTrap();
 
 		ScavTrap &		operator=( ScavTrap const & rhs );
 		void			guardGate();

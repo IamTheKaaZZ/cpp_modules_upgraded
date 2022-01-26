@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # set the project name
-project(Zombie)
+project(FragTrap)
 
 # add the executable
-add_executable(${PROJECT_NAME} Zombie.cpp main.cpp)
+add_executable(${PROJECT_NAME} FragTrap.cpp ClapTrap.cpp main.cpp)
