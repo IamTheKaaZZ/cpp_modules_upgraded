@@ -10,13 +10,17 @@ class Polygons
 	public:
 
 		Polygons() = delete;
+		Polygons(std::string const & name);
 		Polygons( Polygons const & src ) = default;
-		virtual ~Polygons() = default;
+		virtual ~Polygons();
 
 		Polygons &		operator=( Polygons const & rhs ) = default;
-		virtual unsigned &	area() const = 0;
+		virtual unsigned 	area() const = 0;
+		std::string const &	getName() const { return _nameOfPoly; }
 
-	private:
+	protected:
+
+		std::string	_nameOfPoly;
 
 };
 

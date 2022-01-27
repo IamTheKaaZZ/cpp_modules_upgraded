@@ -1,15 +1,17 @@
 #include "Square.hpp"
+#include "Polygons.hpp"
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Square::Square()
-{
+Square::Square(unsigned side) : Polygons("square"), sideLen(side) {
+	std::cout << "Square Constructor\n";
 }
 
-Square::Square( const Square & src )
+Square::Square( const Square & src ) : Polygons(src)
 {
+	std::cout << "Square Copy Constructor\n";
 }
 
 
@@ -19,6 +21,7 @@ Square::Square( const Square & src )
 
 Square::~Square()
 {
+	std::cout << "Square Destructor\n";
 }
 
 
@@ -28,24 +31,22 @@ Square::~Square()
 
 Square &				Square::operator=( Square const & rhs )
 {
-	//if ( this != &rhs )
-	//{
-		//this->_value = rhs.getValue();
-	//}
+	if ( this != &rhs )
+	{
+		Polygons::operator=(rhs);
+		this->sideLen = rhs.sideLen;
+	}
 	return *this;
 }
-
-std::ostream &			operator<<( std::ostream & o, Square const & i )
-{
-	//o << "Value = " << i.getValue();
-	return o;
-}
-
 
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
 
+unsigned				Square::area() const {
+	unsigned	result = sideLen * sideLen;
+	return result;
+}
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------

@@ -4,9 +4,10 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-// Polygons::Polygons()
-// {
-// }
+Polygons::Polygons(std::string const & name) : _nameOfPoly(name)
+{
+    std::cout << "Polygons Constructor\n";
+}
 
 // Polygons::Polygons( const Polygons & src )
 // {
@@ -17,9 +18,10 @@
 // ** -------------------------------- DESTRUCTOR --------------------------------
 // */
 
-// Polygons::~Polygons()
-// {
-// }
+Polygons::~Polygons()
+{
+    std::cout << "Polygons Destructor\n";
+}
 
 
 // /*
