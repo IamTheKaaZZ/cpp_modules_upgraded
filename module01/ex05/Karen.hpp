@@ -4,11 +4,14 @@
 # include <iostream>
 # include <string>
 # include <map>
+# include <functional>
 
 class Karen
 {
 
 	public:
+
+		typedef std::function<void(Karen*)> KarenFunction;
 
 		Karen();
 		Karen( Karen const & src );
@@ -19,7 +22,7 @@ class Karen
 
 	private:
 
-		std::map<std::string, void(Karen::*)(void)>	kMap;
+		std::map<std::string, KarenFunction>	kMap;
 		void		debug(void);
 		void		info(void);
 		void		warning(void);

@@ -1,0 +1,5 @@
+To formalize what João Esteves suggested as exercise would be to:
+ - Define a class to represent a Matrix
+ - Define operators for arithmetic operations, some with overloads (ex: matrix x number, matrix x matrix)
+ - Define a print for the matrix (you could also define the << operator for that)
+ - Experiment with your class and the operators you defined (printing stuff along the way)

@@ -1,0 +1,3 @@
+Virtual vs Override vs Final
+
+Make a hierarchy of all four sided polygons -> calulate their area
