@@ -1,5 +1,55 @@
 #include "Matrix.hpp"
 
 int main() {
-
+    Matrix<char> charm(5, 5, 'E');
+    charm(0,0) = 'D';
+    charm(1,1) = 'F';
+    charm(2,2) = 'L';
+    charm(3,3) = 'A';
+    charm(4,4) = 'B';
+    charm(2,3) = '#';
+    std::cout << "Printing original char Matrix\n";
+    std::cout << charm;
+    std::cout << "Printing char Matrix - 1\n";
+    std::cout << charm - 1;
+    std::cout << "Printing char Matrix + 1\n";
+    std::cout << charm + 1;
+    std::cout << "Printing char Matrix transposed\n";
+    std::cout << charm.transpose();
+    std::cout << charm / 2;
+    std::cout << "Printing char Matrix / 2\n";
+    std::cout << charm * 2;
+    std::cout << "Printing char Matrix * 2\n";
+    Matrix<int> intM1(5, 5, 42);
+    Matrix<int> intM2(5, 5, 69);
+    std::cout << "Printing original int Matrix M1\n";
+    std::cout << intM1;
+    std::cout << "Printing original int Matrix M2\n";
+    std::cout << intM2;
+    std::cout << "Printing sum of M1 and M2\n";
+    std::cout << intM1 + intM2;
+    std::cout << "Printing subtraction of M1 and M2\n";
+    std::cout << intM1 - intM2;
+    std::cout << "Printing multiplication of M1 and M2\n";
+    std::cout << intM1 * intM2;
+    std::cout << "Printing element M1(3,4)\n";
+    std::cout << intM1(3,4) << std::endl;
+    std::cout << "Printing element M2(1,2)\n";
+    std::cout << intM2(1,2) << std::endl;
+    Matrix<> M1(5, 5, 42.42);
+    Matrix<> M2(5, 5, 69.69);
+    std::cout << "Printing original double Matrix M1\n";
+    std::cout << M1;
+    std::cout << "Printing original double Matrix M2\n";
+    std::cout << M2;
+    std::cout << "Printing sum of M1 and M2\n";
+    std::cout << M1 + M2;
+    std::cout << "Printing subtraction of M1 and M2\n";
+    std::cout << M1 - M2;
+    std::cout << "Printing multiplication of M1 and M2\n";
+    std::cout << M1 * M2;
+    std::cout << "Printing element M1(3,4)\n";
+    std::cout << M1(3,4) << std::endl;
+    std::cout << "Printing element M2(1,2)\n";
+    std::cout << M2(1,2) << std::endl;
 }
