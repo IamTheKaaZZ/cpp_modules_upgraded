@@ -3,6 +3,7 @@
 
 # include <iostream>
 # include <list>
+#include <stdexcept>
 # include <string>
 # include <vector>
 # include <exception>
@@ -21,7 +22,7 @@ class Matrix
 			this->_matrix.resize(_rowSize);
 			for (unsigned i = 0; i < _matrix.size(); i++) this->_matrix[i].resize(_colSize, init);
 		}
-		Matrix( Matrix const & src ) {
+		Matrix( Matrix const & src ) { //default works fine
 			this->_rowSize = src.getRows();
 			this->_colSize = src.getCols();
 			this->_matrix = src._matrix;
@@ -29,12 +30,13 @@ class Matrix
 		~Matrix() = default;
 
 		//Matrix operations
-		Matrix &		operator=(Matrix const & rhs) {
+		Matrix &		operator=(Matrix const & rhs) { //default works here
 			if (this != &rhs) {
 				this->_rowSize = rhs.getRows();
 				this->_colSize = rhs.getCols();
 				this->_matrix = rhs._matrix;
 			}
+			return *this;
 		};
 		Matrix			operator+(Matrix const & rhs) {
 			Matrix<T>	sum(this->_rowSize, this->_colSize, static_cast<T>(0));
@@ -73,7 +75,7 @@ class Matrix
 				return multi;
 			}
 			else {
-				std::__throw_logic_error("Cannot multiply matrices with different amount of columns.\n");
+				throw std::logic_error("Cannot multiply matrices with different amount of columns.");
 			}
 		};
 		Matrix			transpose() {
@@ -139,7 +141,7 @@ class Matrix
 		//Returns 3 values: 1 [Eigen Vector], 2 [Eigen value], 3 [Flag]
 		std::tuple<Matrix, T, int> powerIter(unsigned rowNum, T tolerance) {
 			if (!std::is_same<T, double>::value)
-				std::__throw_logic_error("Can only be performed with doubles.");
+				throw std::logic_error("Can only be performed with doubles.");
 			Matrix<T>	X(rowNum, 1, 1.0);
 			for (unsigned i = 1; i <= rowNum; i++) {
         		X(i - 1, 0) = i;
@@ -185,7 +187,7 @@ class Matrix
 		};
 		Matrix		deflation(Matrix & X, double & eigenVal) {
 			if (!std::is_same<T, double>::value)
-				std::__throw_logic_error("Can only be performed with doubles.");
+				throw std::logic_error("Can only be performed with doubles.");
 			// Deflation formula exactly applied
     		double denominator = eigenVal / (X.transpose() * X)(0,0);
     		Matrix Xtrans = X.transpose();
