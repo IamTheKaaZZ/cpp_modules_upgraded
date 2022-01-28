@@ -25,14 +25,14 @@ Zombie::~Zombie()
 ** --------------------------------- OVERLOAD ---------------------------------
 */
 
-Zombie &				Zombie::operator=( Zombie const & rhs )
-{
-	if ( this != &rhs )
-	{
-		this->_name = rhs._name;
-	}
-	return *this;
-}
+// Zombie &				Zombie::operator=( Zombie const & rhs )
+// {
+// 	if ( this != &rhs )
+// 	{
+// 		this->_name = rhs._name;
+// 	}
+// 	return *this;
+// }
 
 std::ostream &			operator<<( std::ostream & o, Zombie const & i )
 {

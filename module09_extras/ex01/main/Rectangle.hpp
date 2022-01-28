@@ -1,15 +1,17 @@
 #ifndef RECTANGLE_HPP
 # define RECTANGLE_HPP
 
+# include "Polygons.hpp"
 # include <iostream>
 # include <string>
 
-class Rectangle
+class Rectangle : public Polygons
 {
 
 	public:
 
-		Rectangle();
+		Rectangle() = delete;
+		Rectangle(unsigned height, unsigned width);
 		Rectangle( Rectangle const & src );
 		~Rectangle();
 

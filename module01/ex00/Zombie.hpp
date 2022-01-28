@@ -14,13 +14,14 @@ class Zombie
 		Zombie( Zombie const & src );
 		~Zombie();
 
-		Zombie &		operator=( Zombie const & rhs );
+		//The assignment operator will get deleted! (see const string attribute)
+		Zombie &		operator=( Zombie const & rhs ) = default;
 		std::string const &	getName() const { return this->_name; }
 		void			announce() const;
 
 	private:
 
-		std::string	_name;
+		std::string	const _name;
 
 };
 

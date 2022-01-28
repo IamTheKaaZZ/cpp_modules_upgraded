@@ -132,11 +132,11 @@ class Matrix
 		T &				operator()(unsigned const & row, unsigned const & col) {
 			return _matrix[row][col];
 		};
-		T const &				operator()(unsigned const & row, unsigned const & col) const {
+		T const &		operator()(unsigned const & row, unsigned const & col) const {
 			return _matrix[row][col];
-		};
-		unsigned		getRows() const { return _rowSize; }
-		unsigned		getCols() const { return _colSize; }
+		}
+		unsigned const &		getRows() const { return _rowSize; }
+		unsigned const &		getCols() const { return _colSize; }
 		//Only when the matrix contains doubles
 		//Returns 3 values: 1 [Eigen Vector], 2 [Eigen value], 3 [Flag]
 		std::tuple<Matrix, T, int> powerIter(unsigned rowNum, T tolerance) {
