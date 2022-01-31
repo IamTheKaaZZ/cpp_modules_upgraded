@@ -19,5 +19,5 @@ Using CMake and Bazel!
 | [ex00](module09_extras/ex00/README.md) |                                   Operator Overloads                                  |
 | [ex01](module09_extras/ex01/README.md) |                                   Liskov Substitution Principle                                  |
 | [ex02](module09_extras/ex02/README.md) |                                    Copy vs Move                                  |
-| [ex03](module09_extras/ex03/README.md) |                                    Memory management ([new and delete](module09_extras/ex03/NewDelete) + [smart pointers](module09_extras/ex03/SmartPointer))                                  |
+| [ex03](module09_extras/ex03/README.md) |                                    Memory management ([new and delete](module09_extras/ex03/EX_NewDelete) + [smart pointers](module09_extras/ex03/EX_SmartPointer))                                  |
 
