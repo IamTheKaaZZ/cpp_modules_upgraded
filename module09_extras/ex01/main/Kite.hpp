@@ -3,22 +3,32 @@
 
 # include <iostream>
 # include <string>
+# include <cmath>
+# include "Polygons.hpp"
+# define _USE_MATH_DEFINES
 
-class Kite
+class Kite : public Polygons
 {
 
 	public:
 
-		Kite();
-		Kite( Kite const & src );
-		~Kite();
+		Kite() = delete;
+		Kite(unsigned const & hDiag, unsigned const & vDiag);
+		Kite(unsigned const & sideA, unsigned const & sideB, int const & sharedAngle);
+		Kite( Kite const & src ) = default;
+		~Kite() = default;
 
-		Kite &		operator=( Kite const & rhs );
+		Kite &		operator=( Kite const & rhs ) = default;
+		float const		area() const;
 
 	private:
 
-};
+		unsigned	hDiag;
+		unsigned	vDiag;
+		unsigned	sideA;
+		unsigned	sideB;
+		int			angle;
 
-std::ostream &			operator<<( std::ostream & o, Kite const & i );
+};
 
 #endif /* ************************************************************ KITE_H */

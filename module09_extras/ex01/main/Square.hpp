@@ -16,7 +16,7 @@ class Square : public Polygons
 		~Square();
 
 		Square &		operator=( Square const & rhs );
-		unsigned		area() const;
+		float const		area() const;
 
 	private:
 

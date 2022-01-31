@@ -7,7 +7,7 @@ cc_library(
 )
 
 cc_binary(
-    name = "Polygons",
+    name = "polygons",
     srcs = ["main.cpp"],
     deps = [
         ":Polygons",

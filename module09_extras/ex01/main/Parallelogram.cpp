@@ -1,51 +1,48 @@
 #include "Parallelogram.hpp"
+#include "Polygons.hpp"
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Parallelogram::Parallelogram()
+Parallelogram::Parallelogram(unsigned const & base, unsigned const & height) :
+	Polygons("parallelogram"),
+	base(base),
+	height(height),
+	hSide(0),
+	vSide(0),
+	angle(0)
 {
 }
 
-Parallelogram::Parallelogram( const Parallelogram & src )
+Parallelogram::Parallelogram(unsigned const & hSide, unsigned const & vSide, int const & angle) :
+	Polygons("parallelogram"),
+	base(0),
+	height(0),
+	hSide(hSide),
+	vSide(vSide),
+	angle(angle)
 {
 }
-
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
 */
 
-Parallelogram::~Parallelogram()
-{
-}
-
-
 /*
 ** --------------------------------- OVERLOAD ---------------------------------
 */
-
-Parallelogram &				Parallelogram::operator=( Parallelogram const & rhs )
-{
-	//if ( this != &rhs )
-	//{
-		//this->_value = rhs.getValue();
-	//}
-	return *this;
-}
-
-std::ostream &			operator<<( std::ostream & o, Parallelogram const & i )
-{
-	//o << "Value = " << i.getValue();
-	return o;
-}
-
 
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
 
+float const			Parallelogram::area() const {
+	if (angle) {
+		return hSide * vSide * std::sin(angle * M_PI / 180);
+	}
+	else return base * height;
+}
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------

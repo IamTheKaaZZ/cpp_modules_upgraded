@@ -43,7 +43,7 @@ Square &				Square::operator=( Square const & rhs )
 ** --------------------------------- METHODS ----------------------------------
 */
 
-unsigned				Square::area() const {
+float const				Square::area() const {
 	unsigned	result = sideLen * sideLen;
 	return result;
 }

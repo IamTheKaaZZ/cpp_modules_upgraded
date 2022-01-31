@@ -15,7 +15,7 @@ class Polygons
 		virtual ~Polygons();
 
 		Polygons &		operator=( Polygons const & rhs ) = default;
-		virtual unsigned 	area() const = 0;
+		virtual float const 	area() const = 0;
 		std::string const &	getName() const { return _nameOfPoly; }
 
 	protected:

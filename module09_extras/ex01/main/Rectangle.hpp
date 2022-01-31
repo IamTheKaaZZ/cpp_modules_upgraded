@@ -11,16 +11,17 @@ class Rectangle : public Polygons
 	public:
 
 		Rectangle() = delete;
-		Rectangle(unsigned height, unsigned width);
-		Rectangle( Rectangle const & src );
-		~Rectangle();
+		Rectangle(unsigned const & height, unsigned const & width);
+		Rectangle( Rectangle const & src ) = default;
+		~Rectangle() = default;
 
-		Rectangle &		operator=( Rectangle const & rhs );
+		Rectangle &		operator=( Rectangle const & rhs ) = default;
+		float const		area() const;
 
 	private:
+		unsigned	_height;
+		unsigned	_width;
 
 };
-
-std::ostream &			operator<<( std::ostream & o, Rectangle const & i );
 
 #endif /* ******************************************************* RECTANGLE_H */

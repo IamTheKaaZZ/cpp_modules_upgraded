@@ -1,51 +1,48 @@
 #include "Kite.hpp"
+#include <cmath>
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Kite::Kite()
+Kite::Kite(unsigned const & hDiag, unsigned const & vDiag) :
+	Polygons("kite"),
+	hDiag(hDiag),
+	vDiag(vDiag),
+	sideA(0),
+	sideB(0),
+	angle(0)
 {
 }
 
-Kite::Kite( const Kite & src )
+Kite::Kite(unsigned const & sideA, unsigned const & sideB, int const & sharedAgnle) :
+	Polygons("kite"),
+	hDiag(0),
+	vDiag(0),
+	sideA(sideA),
+	sideB(sideB),
+	angle(sharedAgnle)
 {
 }
-
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
 */
 
-Kite::~Kite()
-{
-}
-
-
 /*
 ** --------------------------------- OVERLOAD ---------------------------------
 */
-
-Kite &				Kite::operator=( Kite const & rhs )
-{
-	//if ( this != &rhs )
-	//{
-		//this->_value = rhs.getValue();
-	//}
-	return *this;
-}
-
-std::ostream &			operator<<( std::ostream & o, Kite const & i )
-{
-	//o << "Value = " << i.getValue();
-	return o;
-}
-
 
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
 
+float const			Kite::area() const {
+	if (angle) {
+		return sideA * sideB * std::sin(angle * M_PI / 180);
+	}
+	else return (hDiag * vDiag) / 2.0;
+}
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------

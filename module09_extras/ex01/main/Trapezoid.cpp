@@ -1,51 +1,33 @@
 #include "Trapezoid.hpp"
+#include "Polygons.hpp"
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Trapezoid::Trapezoid()
+Trapezoid::Trapezoid(unsigned const & base1, unsigned const & base2, unsigned const & height) :
+	Polygons("trapezoid"),
+	b1(base1),
+	b2(base2),
+	h(height)
 {
 }
-
-Trapezoid::Trapezoid( const Trapezoid & src )
-{
-}
-
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
 */
 
-Trapezoid::~Trapezoid()
-{
-}
-
-
 /*
 ** --------------------------------- OVERLOAD ---------------------------------
 */
-
-Trapezoid &				Trapezoid::operator=( Trapezoid const & rhs )
-{
-	//if ( this != &rhs )
-	//{
-		//this->_value = rhs.getValue();
-	//}
-	return *this;
-}
-
-std::ostream &			operator<<( std::ostream & o, Trapezoid const & i )
-{
-	//o << "Value = " << i.getValue();
-	return o;
-}
-
 
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
 
+float const		Trapezoid::area() const {
+	return (b1 + b2) * h / 2.0;
+}
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
