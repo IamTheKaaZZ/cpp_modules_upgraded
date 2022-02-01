@@ -1,15 +1,16 @@
 #ifndef BASEPTR_HPP
 # define BASEPTR_HPP
 
+# include "moveSwap.hpp"
 # include <iostream>
 # include <string>
 # include <type_traits>
 
+namespace SmartPointer {
+
 template<class T>
 class BasePtr 
 {
-
-		using type = std::remove_extent<T>;
 
 	public:
 
@@ -17,7 +18,8 @@ class BasePtr
 		constexpr BasePtr() noexcept : data(nullptr) {
 			std::cout << "BasePtr ctor.\n";
 		}
-		constexpr BasePtr(std::nullptr_t) noexcept : BasePtr() {
+		constexpr BasePtr(std::nullptr_t) noexcept : data(nullptr) {
+			std::cout << "BasePtr ctor.\n";
 		}
 
 		//POINTER
@@ -34,15 +36,12 @@ class BasePtr
 		//DESTRUCT
 		~BasePtr() {
 			std::cout << "BasePtr dtor.\n";
-			if (data != nullptr)
-				delete data;
+			this->reset();
 		};
 
 		//Assignment
-		BasePtr<T> &	operator=(BasePtr<T> && rhs) noexcept {
-			if (this != rhs) {
-				this->swap(rhs);
-			}
+		BasePtr<T> &	operator=(BasePtr<T> && rhs) noexcept { //move
+			this->swap(rhs);
 			return *this;
 		}
 		BasePtr<T> &	operator=(std::nullptr_t) noexcept {
@@ -51,32 +50,32 @@ class BasePtr
 		}
 
 		//Access operators
-		type*			operator->() const { return data; }
-		type			operator*() const { return *data; }
+		T*			operator->() const { return data; }
+		T&			operator*() const { return *data; }
 
 		//Access smart pointer state
-		type*			get() const { return data; }
+		T*			get() const { return data; }
 		explicit	operator bool() const { return data; }
 
 		//Modify object state
-		type*			release() noexcept {
-			type*	result = nullptr;
-			moveSwap(result, this->data); //release the pointer and set it to nullptr in the object
+		T*			release() noexcept {
+			T*	result = nullptr;
+			SmartPointer::moveSwap(result, this->data); //release the pointer and set it to nullptr in the object
 			return result;
 		}
 		void		swap(BasePtr<T> & other) noexcept {
-			moveSwap(this->data, other.data);
+			SmartPointer::moveSwap(this->data, other.data);
 		}
 		void		reset() {
-			type*	tmp = release(); //release and set to nullptr
+			T*	tmp = release(); //release and set to nullptr
 			if (tmp != nullptr) {	//delete depending if it's an array or not
-				if (std::is_array<type>::value)
+				if (std::is_array<T>::value)
 					delete 	[] tmp;
 				else
 					delete tmp;
 			}
 		}
-		void		reset(type* newData) noexcept {
+		void		reset(T* newData) noexcept {
 			this->reset();
 			data = newData;
 		}
@@ -85,4 +84,6 @@ class BasePtr
 
 		T*	data;
 };
+
+}
 #endif /* ********************************************************* BASEPTR_H */
