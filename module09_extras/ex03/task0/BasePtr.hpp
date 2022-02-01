@@ -54,8 +54,8 @@ class BasePtr
 		T&			operator*() const { return *data; }
 
 		//Access smart pointer state
-		T*			get() const { return data; }
-		explicit	operator bool() const { return data; }
+		T*			get() const { return data; }	//Get the stored pointer
+		explicit	operator bool() const { return (data != nullptr); }
 
 		//Modify object state
 		T*			release() noexcept {
@@ -67,7 +67,7 @@ class BasePtr
 			SmartPointer::moveSwap(this->data, other.data);
 		}
 		void		reset() {
-			T*	tmp = release(); //release and set to nullptr
+			T*	tmp = release(); 	//release and set to nullptr
 			if (tmp != nullptr) {	//delete depending if it's an array or not
 				if (std::is_array<T>::value)
 					delete 	[] tmp;
