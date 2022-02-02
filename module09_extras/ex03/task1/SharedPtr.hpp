@@ -4,46 +4,65 @@
 # include <cstddef>
 # include <iostream>
 # include <string>
-# include "../task0/UniquePtr.hpp"
+# include "UniquePtr.hpp"
 
 namespace SmartPointer {
 
-template<class T>
-class SharedPtr : public BasePtr<T>
-{
+class RefCounter {
 
 	public:
 
-      	using element_type = typename SharedPtr<T>::type;
+		RefCounter() : m_count(0) {}
+		RefCounter(unsigned const & start) : m_count(start) {}
+		RefCounter(RefCounter const & src) = delete;
+		RefCounter & operator=(RefCounter const & src) = default;
+		~RefCounter() {}
+
+		void	reset() { m_count = 0; }
+		long int	get() { return m_count; }
+		void	operator++() { m_count++; }
+		void	operator++(int) { m_count++; }
+		void	operator--() { m_count--; }
+		void	operator--(int) { m_count--; }
+		void	operator=(long int const & newVal) { m_count = newVal; }
+		friend std::ostream &	operator<<(std::ostream & o, RefCounter const & r) {
+			o << "RefCounter = " << r.m_count << '\n';
+			return o;
+		}
+
+	private:
+
+		long int	m_count;
+};
+
+template<class T>
+class SharedPtr
+{
+	public:
 
 		//NULL/DEFAULT
-		constexpr SharedPtr() noexcept : BasePtr<T>(),
-			useCount(new long int(0)),
-			unmanagedPtr(nullptr)
+		constexpr SharedPtr() noexcept : data(nullptr),
+			useCount(new RefCounter())
 		{
-			std::cout << "SharedPtr ctor.\n";
+			std::cout << "SharedPtr def ctor.\n";
 		};
-		constexpr SharedPtr(std::nullptr_t) noexcept : SharedPtr() {}
+		constexpr SharedPtr(std::nullptr_t) noexcept : SharedPtr<T>() {}
 
 		//POINTER
-		explicit SharedPtr(T* data) : BasePtr<T>(data),
-			useCount(new long int(1)),
-			unmanagedPtr(nullptr)
+		explicit SharedPtr(T* data) : data(data),
+			useCount(new RefCounter(1))
 		{
-			std::cout << "SharedPtr ctor.\n";
+			std::cout << "SharedPtr ptr ctor.\n";
 		}
 
 		//COPY (CTOR + ASSIGN)
-		SharedPtr(SharedPtr<T> const & src) noexcept : BasePtr<T>(src),
-			unmanagedPtr(src.unmanagedPtr)
+		SharedPtr(SharedPtr<T> const & src) noexcept : SharedPtr<T>(src.get())
 		{
 			std::cout << "SharedPtr copy ctor.\n";
-			if (this->data != nullptr) {
-				if (src.useCount)
-					(*src.useCount)++;
-				useCount = new long int(1);
+			if (src.get() != nullptr && src.use_count() != 0) {
+				useCount = src.useCount;
+				(*useCount)++;
 			}
-			else useCount = new long int(0);
 		}
 		//Copy from WEAK => see after WeakPtr is implemented
 		/*
@@ -51,95 +70,110 @@ class SharedPtr : public BasePtr<T>
 			== copy ctor but throw bad_weak_ptr exception when WeakPtr has expired.
 		}
 		*/
-		SharedPtr<T> &		operator=(SharedPtr<T> const & rhs ) noexcept {
-			this->data = rhs.data;
-			this->unmanagedPtr = rhs.unmanagedPtr;
-			if (rhs.useCount) (*rhs.useCount)++;
+		SharedPtr<T> &		operator=(SharedPtr<T> const & rhs) noexcept {
+			std::cout << "Copy op shared\n";
+			destructSideEffects(false);
+			this->data = rhs.get();
+			this->useCount = rhs.useCount;
+			(*rhs.useCount)++;
+			return *this;
+		};
+		//Assignment - nullptr
+		SharedPtr<T> &	operator=(std::nullptr_t) noexcept {
+			std::cout << "null assign op shared\n";
+			destructSideEffects(false);
+			this->release();
+			useCount = new RefCounter();
 			return *this;
 		}
 
+
 		//MOVE (CTOR + ASSIGN)
-		SharedPtr(SharedPtr<T> && src) noexcept : BasePtr<T>(std::move(src)),
-			useCount(1),
-			unmanagedPtr(std::move(src.unmanagedPtr))
+		SharedPtr(SharedPtr<T> && src) noexcept : SharedPtr<T>()
 		{
 			std::cout << "SharedPtr move ctor.\n";
-			src.reset();
+			this->swap(src);
+		}
+		SharedPtr(UniquePtr<T> && src) noexcept : data(nullptr),
+			useCount(new RefCounter(1))
+		{
+			std::cout << "SharedPtr UniquePtr move ctor.\n";
+			this->data = src.release();
 		}
 		SharedPtr<T> &		operator=(SharedPtr<T> && rhs) noexcept { //Move from other SharedPtr
-			BasePtr<T>::operator=(std::move(rhs));
-			this->unmanagedPtr = std::move(rhs.unmanagedPtr);
-			rhs.reset();
-			if (useCount != nullptr) {
-				delete useCount;
-			}
-			useCount = new long int(rhs.use_count());
+			std::cout << "Move op shared\n";
+			destructSideEffects(false);
+			this->swap(rhs);
 			return *this;
 		}
 		SharedPtr<T> &		operator=(UniquePtr<T> && rhs) noexcept { //Move from UniquePtr
-			BasePtr<T>::operator=(std::move(rhs));
-			this->unmanagedPtr = std::move(rhs.unmanagedPtr);
-			rhs.reset();
-			if (useCount != nullptr) {
-				delete useCount;
-			}
-			useCount = new long int(1);
+			std::cout << "Move op unique\n";
+			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
+			moveSwap(*data, *rhs);
+			destructSideEffects(false); //Bruh this decreases the value of rhs by 1 wut
+			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
+			(*useCount) = 1;
 			return *this;
-		}
-
-		//ALIASING CONSTRUCTOR (Move + extra unmanaged ptr)
-		SharedPtr(SharedPtr && src, element_type* ptr) : SharedPtr<T>(std::move(src)),
-			useCount(2),
-			unmanagedPtr(ptr)
-		{
-			std::cout << "SharedPtr Alias ctor.\n"; //Only has an extra effect on get() AND use_count
-			//The object shares OWNERSHIP with src BUT points to ptr
 		}
 
 		//DESTRUCTOR
 		~SharedPtr() {
 			std::cout << "SharedPtr dtor.\n";
-			switch (useCount) {
-				case 0:
-					delete useCount;
-					break;
-				case 1:
-					BasePtr<T>::reset();
-					delete useCount;
-					break;
-				default:
-					(*useCount)--;
-					break;
-			}
+			destructSideEffects(true);
 		}
 
 		//Access operators
-		T*			get() const override { //Overload of the base class because of alias ctor
-			return (unmanagedPtr)? unmanagedPtr : this->data; 
-		}
+		T*			operator->() const { return data; }
+		T&			operator*() const { return *data; }
 
 		//Access smart pointer state
-		long int	use_count() const noexcept { return *useCount; }
-		bool		unique() const noexcept { return ((*this) && *useCount == 1); }
+		T*			get() const { return data; }	//Get the stored pointer
+		explicit				operator bool() const { return (data != nullptr); }
+		long int				use_count() const noexcept { return useCount->get(); }
+		bool					unique() const noexcept { return ((*this) && useCount->get() == 1); }
 
 		//Modify object state
-		T*			release() noexcept = delete;
-		void		swap(SharedPtr<T> & other) noexcept {
-			BasePtr<T>::swap(other);
+		T*			release() noexcept {
+			T*	result = nullptr;
+			SmartPointer::moveSwap(result, this->data); //release the pointer and set it to nullptr in the object
+			return result;
 		}
-		void		reset() {
-			BasePtr<T>::reset();
-			*useCount = 0;
+		void					swap(SharedPtr<T> & other) noexcept {
+			SmartPointer::moveSwap(this->data, other.data);
+			SmartPointer::moveSwap(this->useCount, other.useCount);
 		}
-		void		reset(T* newData) noexcept {
-			BasePtr<T>::reset(newData);
-			*useCount = 1;
+		void					reset() {
+			T*	tmp = release(); 	//release and set to nullptr
+			if (tmp != nullptr) {	//delete depending if it's an array or not
+				std::cout << "Deleting stored object\n";
+				if (std::is_array<T>::value)
+					delete 	[] tmp;
+				else
+					delete tmp;
+			}
+		}
+		void					reset(T* newData) noexcept {
+			this->reset();
+			data = newData;
 		}
 
 	private:
 
-		long int*		useCount;
-		element_type*	unmanagedPtr;
+		T*				data;
+		RefCounter*		useCount;
+		void			destructSideEffects(bool const & dtorCalled) {
+			if (useCount->get() > 1)
+				(*useCount)--;
+			else if (useCount->get() == 1) {
+				reset();
+				if (dtorCalled)
+					delete useCount;
+			}
+			else if (useCount->get() == 0) {
+				if (dtorCalled)
+					delete useCount;
+			}
+		}
 };
 
 //-------------Non-member swap
@@ -204,21 +238,18 @@ inline bool	operator!=(std::nullptr_t, SharedPtr<T> const & rhs) noexcept {
 
 //We implement operator< once fully and then use the implementation for the rest
 
-template<class T, class U>
-inline bool	operator<(SharedPtr<T> const & lhs, SharedPtr<U> const & rhs) noexcept {
-    using lhs_elt = typename SharedPtr<T>::element_type;
-    using rhs_elt = typename SharedPtr<U>::element_type;
-    using V = typename std::common_type<lhs_elt*, rhs_elt*>::type;
-    return std::less<V>()(lhs.get(), rhs.get());
+template<class T>
+inline bool	operator<(SharedPtr<T> const & lhs, SharedPtr<T> const & rhs) noexcept {
+    return std::less<T*>()(lhs.get(), rhs.get());
 }
 template<class T>
 inline bool	operator<(SharedPtr<T> const & lhs, std::nullptr_t) noexcept {
-    using lhs_elt = typename SharedPtr<T>::element_type;
+    using lhs_elt = typename SharedPtr<T>::T;
     return std::less<lhs_elt*>()(lhs.get(), nullptr);
 }
 template<class T>
 inline bool	operator<(std::nullptr_t, SharedPtr<T> const & rhs) noexcept {
-    using rhs_elt = typename SharedPtr<T>::element_type;
+    using rhs_elt = typename SharedPtr<T>::T;
     return std::less<rhs_elt*>()(nullptr, rhs.get());
 }
 
