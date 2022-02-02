@@ -70,7 +70,7 @@ class SharedPtr
 			== copy ctor but throw bad_weak_ptr exception when WeakPtr has expired.
 		}
 		*/
-		SharedPtr<T> &		operator=(SharedPtr<T> const & rhs) noexcept {
+		SharedPtr<T> &	operator=(SharedPtr<T> const & rhs) noexcept {
 			std::cout << "Copy op shared\n";
 			destructSideEffects(false);
 			this->data = rhs.get();
@@ -110,6 +110,7 @@ class SharedPtr
 			std::cout << "Move op unique\n";
 			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
 			moveSwap(*data, *rhs);
+			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
 			destructSideEffects(false); //Bruh this decreases the value of rhs by 1 wut
 			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
 			(*useCount) = 1;
