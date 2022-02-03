@@ -40,6 +40,8 @@ class SharedPtr
 {
 	public:
 
+      	using element_type = typename std::remove_extent<T>::type;
+
 		//NULL/DEFAULT
 		constexpr SharedPtr() noexcept : data(nullptr),
 			useCount(new RefCounter())
@@ -177,6 +179,14 @@ class SharedPtr
 		}
 };
 
+//-------------<< overload
+
+template<class T>
+std::ostream &		operator<<(std::ostream & o, SharedPtr<T> const & s) {
+	o << s.get();
+	return o;
+}
+
 //-------------Non-member swap
 
 template<class T>
@@ -239,9 +249,12 @@ inline bool	operator!=(std::nullptr_t, SharedPtr<T> const & rhs) noexcept {
 
 //We implement operator< once fully and then use the implementation for the rest
 
-template<class T>
-inline bool	operator<(SharedPtr<T> const & lhs, SharedPtr<T> const & rhs) noexcept {
-    return std::less<T*>()(lhs.get(), rhs.get());
+template<class T, class U>
+inline bool	operator<(SharedPtr<T> const & lhs, SharedPtr<U> const & rhs) noexcept {
+    using T_elt = typename SharedPtr<T>::element_type;
+    using U_elt = typename SharedPtr<U>::element_type;
+    using V = typename std::common_type<T_elt*, U_elt*>::type;
+    return std::less<V>()(lhs.get(), rhs.get());
 }
 template<class T>
 inline bool	operator<(SharedPtr<T> const & lhs, std::nullptr_t) noexcept {
