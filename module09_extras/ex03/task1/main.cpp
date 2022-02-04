@@ -61,7 +61,10 @@ void    originals() {
 
     std::cout << "a == b: " << (a==b) << '\n';
     std::cout << "a < b: " << (a < b) << '\n';
+    std::cout << "a > b: " << (a > b) << '\n';
     std::cout << "b == c: " << (b==c) << '\n';
+    std::cout << "b <= c: " << (b<=c) << '\n';
+    std::cout << "b >= c: " << (b>=c) << '\n';
     std::cout << "c == d: " << (c==d) << '\n';
 
     std::cout << "a != nullptr: " << (a!=nullptr) << '\n';
@@ -131,7 +134,10 @@ void    mine() {
 
     std::cout << "a == b: " << (a==b) << '\n';
     std::cout << "a < b: " << (a < b) << '\n';
+    std::cout << "a > b: " << (a > b) << '\n';
     std::cout << "b == c: " << (b==c) << '\n';
+    std::cout << "b <= c: " << (b<=c) << '\n';
+    std::cout << "b >= c: " << (b>=c) << '\n';
     std::cout << "c == d: " << (c==d) << '\n';
 
     std::cout << "a != nullptr: " << (a!=nullptr) << '\n';

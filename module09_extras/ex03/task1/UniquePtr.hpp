@@ -18,23 +18,23 @@ class UniquePtr : public BasePtr<T>
 
 		//NULL
 		constexpr UniquePtr() noexcept : BasePtr<T>() {
-			std::cout << "UniquePtr ctor.\n";
+			// std::cout << "UniquePtr ctor.\n";
 		}
 		constexpr UniquePtr(std::nullptr_t) noexcept : UniquePtr() {}
 
 		//POINTER
 		explicit UniquePtr(T* data) noexcept : BasePtr<T>(data) {
-			std::cout << "UniquePtr ctor.\n";
+			// std::cout << "UniquePtr ctor.\n";
 		};
 
 		//MOVE
 		UniquePtr(UniquePtr<T> && u) noexcept : BasePtr<T>(std::move(u)) {
-			std::cout << "UniquePtr move ctor.\n";
+			// std::cout << "UniquePtr move ctor.\n";
 		}
 
 		//DESTRUCT
 		~UniquePtr() {
-			std::cout << "UniquePtr dtor.\n";
+			// std::cout << "UniquePtr dtor.\n";
 			BasePtr<T>::reset();
 		};
 

@@ -16,30 +16,30 @@ class BasePtr
 
 		//NULL
 		constexpr BasePtr() noexcept : data(nullptr) {
-			std::cout << "BasePtr def ctor.\n";
+			// std::cout << "BasePtr def ctor.\n";
 		}
 		constexpr BasePtr(std::nullptr_t) noexcept : BasePtr<T>() {
 		}
 
 		//POINTER
 		explicit BasePtr(T* data) noexcept : data(data) {
-			std::cout << "BasePtr ptr ctor.\n";
+			// std::cout << "BasePtr ptr ctor.\n";
 		};
 
 		//COPY
 		BasePtr(BasePtr<T> const & src) noexcept : data(src.data) {
-			std::cout << "BasePtr copy ctor.\n";
+			// std::cout << "BasePtr copy ctor.\n";
 		};
 
 		//MOVE
 		BasePtr(BasePtr<T> && u) noexcept : data(nullptr) {
-			std::cout << "BasePtr move ctor.\n";
+			// std::cout << "BasePtr move ctor.\n";
 			this->swap(u); //Swap the data of u with nullptr
 		}
 
 		//DESTRUCT
 		~BasePtr() {
-			std::cout << "BasePtr dtor.\n";
+			// std::cout << "BasePtr dtor.\n";
 			this->reset();
 		};
 
@@ -74,7 +74,7 @@ class BasePtr
 		void		reset() {
 			T*	tmp = release(); 	//release and set to nullptr
 			if (tmp != nullptr) {	//delete depending if it's an array or not
-				std::cout << "Deleting stored object\n";
+				// std::cout << "Deleting stored object\n";
 				if (std::is_array<T>::value)
 					delete 	[] tmp;
 				else

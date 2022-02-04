@@ -46,21 +46,21 @@ class SharedPtr
 		constexpr SharedPtr() noexcept : data(nullptr),
 			useCount(new RefCounter())
 		{
-			std::cout << "SharedPtr def ctor.\n";
+			// std::cout << "SharedPtr def ctor.\n";
 		};
-		constexpr SharedPtr(std::nullptr_t) noexcept : SharedPtr<T>() {}
+		constexpr SharedPtr(std::nullptr_t) noexcept : SharedPtr() {}
 
 		//POINTER
 		explicit SharedPtr(T* data) : data(data),
 			useCount(new RefCounter(1))
 		{
-			std::cout << "SharedPtr ptr ctor.\n";
+			// std::cout << "SharedPtr ptr ctor.\n";
 		}
 
 		//COPY (CTOR + ASSIGN)
 		SharedPtr(SharedPtr<T> const & src) noexcept : SharedPtr<T>(src.get())
 		{
-			std::cout << "SharedPtr copy ctor.\n";
+			// std::cout << "SharedPtr copy ctor.\n";
 			if (src.get() != nullptr && src.use_count() != 0) {
 				useCount = src.useCount;
 				(*useCount)++;
@@ -73,7 +73,7 @@ class SharedPtr
 		}
 		*/
 		SharedPtr<T> &	operator=(SharedPtr<T> const & rhs) noexcept {
-			std::cout << "Copy op shared\n";
+			// std::cout << "Copy op shared\n";
 			destructSideEffects(false);
 			this->data = rhs.get();
 			this->useCount = rhs.useCount;
@@ -82,7 +82,7 @@ class SharedPtr
 		};
 		//Assignment - nullptr
 		SharedPtr<T> &	operator=(std::nullptr_t) noexcept {
-			std::cout << "null assign op shared\n";
+			// std::cout << "null assign op shared\n";
 			destructSideEffects(false);
 			this->release();
 			useCount = new RefCounter();
@@ -93,23 +93,29 @@ class SharedPtr
 		//MOVE (CTOR + ASSIGN)
 		SharedPtr(SharedPtr<T> && src) noexcept : SharedPtr<T>()
 		{
-			std::cout << "SharedPtr move ctor.\n";
+			// std::cout << "SharedPtr move ctor.\n";
 			this->swap(src);
 		}
 		SharedPtr(UniquePtr<T> && src) noexcept : data(nullptr),
 			useCount(new RefCounter(1))
 		{
-			std::cout << "SharedPtr UniquePtr move ctor.\n";
+			// std::cout << "SharedPtr UniquePtr move ctor.\n";
+			this->data = src.release();
+		}
+		SharedPtr(BasePtr<T> && src) noexcept : data(nullptr),
+			useCount(new RefCounter(1))
+		{
+			// std::cout << "SharedPtr UniquePtr move ctor.\n";
 			this->data = src.release();
 		}
 		SharedPtr<T> &		operator=(SharedPtr<T> && rhs) noexcept { //Move from other SharedPtr
-			std::cout << "Move op shared\n";
+			// std::cout << "Move op shared\n";
 			destructSideEffects(false);
 			this->swap(rhs);
 			return *this;
 		}
 		SharedPtr<T> &		operator=(UniquePtr<T> && rhs) noexcept { //Move from UniquePtr
-			std::cout << "Move op unique\n";
+			// std::cout << "Move op unique\n";
 			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
 			moveSwap(*data, *rhs);
 			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
@@ -121,7 +127,7 @@ class SharedPtr
 
 		//DESTRUCTOR
 		~SharedPtr() {
-			std::cout << "SharedPtr dtor.\n";
+			// std::cout << "SharedPtr dtor.\n";
 			destructSideEffects(true);
 		}
 
@@ -148,7 +154,7 @@ class SharedPtr
 		void					reset() {
 			T*	tmp = release(); 	//release and set to nullptr
 			if (tmp != nullptr) {	//delete depending if it's an array or not
-				std::cout << "Deleting stored object\n";
+				// std::cout << "Deleting stored object\n";
 				if (std::is_array<T>::value)
 					delete 	[] tmp;
 				else
@@ -254,7 +260,7 @@ inline bool	operator<(SharedPtr<T> const & lhs, SharedPtr<U> const & rhs) noexce
     using T_elt = typename SharedPtr<T>::element_type;
     using U_elt = typename SharedPtr<U>::element_type;
     using V = typename std::common_type<T_elt*, U_elt*>::type;
-    return std::less<V>()(lhs.get(), rhs.get());
+    return std::less<V>()(rhs.get(), lhs.get());
 }
 template<class T>
 inline bool	operator<(SharedPtr<T> const & lhs, std::nullptr_t) noexcept {
@@ -269,41 +275,41 @@ inline bool	operator<(std::nullptr_t, SharedPtr<T> const & rhs) noexcept {
 
 template<class T, class U>
 bool	operator<=(SharedPtr<T> const & lhs, SharedPtr<U> const & rhs) noexcept {
-	return !(rhs.get() < lhs.get());
+	return !(rhs < lhs);
 }
 template<class T, class U>
 bool	operator<=(SharedPtr<T> const & lhs, std::nullptr_t) noexcept {
-	return !(nullptr < lhs.get());
+	return !(nullptr < lhs);
 }
 template<class T, class U>
 bool	operator<=(std::nullptr_t, SharedPtr<U> const & rhs) noexcept {
-	return !(rhs.get() < nullptr);
+	return !(rhs < nullptr);
 }
 
 template<class T, class U>
 bool	operator>(SharedPtr<T> const & lhs, SharedPtr<U> const & rhs) noexcept {
-	return (rhs.get() < lhs.get());
+	return (rhs < lhs);
 }
 template<class T, class U>
 bool	operator>(SharedPtr<T> const & lhs, std::nullptr_t) noexcept {
-	return (nullptr < lhs.get());
+	return (nullptr < lhs);
 }
 template<class T, class U>
 bool	operator>(std::nullptr_t, SharedPtr<U> const & rhs) noexcept {
-	return (rhs.get() < nullptr);
+	return (rhs < nullptr);
 }
 
 template<class T, class U>
 bool	operator>=(SharedPtr<T> const & lhs, SharedPtr<U> const & rhs) noexcept {
-	return !(lhs.get() < rhs.get());
+	return !(lhs < rhs);
 }
 template<class T, class U>
 bool	operator>=(SharedPtr<T> const & lhs, std::nullptr_t) noexcept {
-	return !(lhs.get() < nullptr);
+	return !(lhs < nullptr);
 }
 template<class T, class U>
 bool	operator>=(std::nullptr_t, SharedPtr<U> const & rhs) noexcept {
-	return !(nullptr < rhs.get());
+	return !(nullptr < rhs);
 }
 
 }
