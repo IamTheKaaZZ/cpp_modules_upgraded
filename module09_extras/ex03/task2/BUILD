@@ -9,7 +9,7 @@ cc_library(
 cc_library(
     name = "SharedPtr",
     srcs = [],
-    hdrs = ["SharedPtr.hpp"],
+    hdrs = ["SharedPtr.hpp", "ShareCount.hpp"],
 )
 
 cc_library(

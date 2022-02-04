@@ -29,9 +29,15 @@ void    originals() {
                                         // sharing group:
                                         // --------------
     sp1 = std::make_shared<int> (20);    // sp1
+    std::cout << "use_count:\n";
+    std::cout << "sp1: " << sp1.use_count() << '\n';
     wp = sp1;                            // sp1, wp
+    std::cout << "use_count:\n";
+    std::cout << "wp: " << wp.use_count() << '\n';
 
     sp2 = wp.lock();                     // sp1, wp, sp2
+    std::cout << "use_count:\n";
+    std::cout << "sp2: " << sp2.use_count() << '\n';
     sp1.reset();                         //      wp, sp2
 
     sp1 = wp.lock();                     // sp1, wp, sp2
@@ -59,8 +65,12 @@ void    mine() {
 
     std::cout << "1. weak " << (weak.expired()?"is":"is not") << " expired\n";
     std::cout << "1. weak " << (*weak.get()) << std::endl;
+    std::cout << "1. weak " << (weak.use_count()) << std::endl;
+    std::cout << "1. shared " << (shared.use_count()) << std::endl;
 
     shared.reset();
+    std::cout << "2. weak " << (weak.use_count()) << std::endl;
+    std::cout << "2. shared " << (shared.use_count()) << std::endl;
 
     std::cout << "2. weak " << (weak.expired()?"is":"is not") << " expired\n";
 
@@ -69,12 +79,20 @@ void    mine() {
                                                 // sharing group:
                                                 // --------------
     sp1 = SmartPointer::make_shared<int> (20);  // sp1
-    wp = sp1;                                   // sp1, wp
+    std::cout << "use_count:\n";
+    std::cout << "sp1: " << sp1.use_count() << '\n';
+    wp = sp1;                            // sp1, wp
+    std::cout << "use_count:\n";
+    std::cout << "wp: " << wp.use_count() << '\n';
 
-    sp2 = wp.lock();                            // sp1, wp, sp2
-    sp1.reset();                                //      wp, sp2
+    sp2 = wp.lock();                     // sp1, wp, sp2
+    std::cout << "use_count:\n";
+    std::cout << "sp2: " << sp2.use_count() << '\n';
+    sp1.reset();                         //      wp, sp2
 
+			std::cout << "segfault hunting\n";
     sp1 = wp.lock();                            // sp1, wp, sp2
+			std::cout << "segfault hunting\n";
 
     std::cout << "*sp1: " << *sp1 << '\n';
     std::cout << "*sp2: " << *sp2 << '\n';

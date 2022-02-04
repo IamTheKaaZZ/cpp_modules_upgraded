@@ -5,38 +5,12 @@
 # include <iostream>
 # include <string>
 # include "UniquePtr.hpp"
+# include "ShareCount.hpp"
 
 namespace SmartPointer {
 
 using std::bad_weak_ptr;
 using SmartPointer::WeakPtr;
-
-class RefCounter {
-
-	public:
-
-		RefCounter() : m_count(0) {}
-		RefCounter(unsigned const & start) : m_count(start) {}
-		RefCounter(RefCounter const & src) = delete;
-		RefCounter & operator=(RefCounter const & src) = default;
-		~RefCounter() {}
-
-		void	reset() { m_count = 0; }
-		long int	get() { return m_count; }
-		void	operator++() { m_count++; }
-		void	operator++(int) { m_count++; }
-		void	operator--() { m_count--; }
-		void	operator--(int) { m_count--; }
-		void	operator=(long int const & newVal) { m_count = newVal; }
-		friend std::ostream &	operator<<(std::ostream & o, RefCounter const & r) {
-			o << "RefCounter = " << r.m_count << '\n';
-			return o;
-		}
-
-	private:
-
-		long int	m_count;
-};
 
 template<class T>
 class SharedPtr
@@ -48,7 +22,7 @@ class SharedPtr
 		//-------------CONSTRUCTORS
 		//NULL/DEFAULT
 		constexpr SharedPtr() noexcept : data(nullptr),
-			useCount(new RefCounter())
+			refs(new ShareCount())
 		{
 			// std::cout << "SharedPtr def ctor.\n";
 		};
@@ -56,7 +30,7 @@ class SharedPtr
 
 		//POINTER
 		explicit SharedPtr(T* data) : data(data),
-			useCount(new RefCounter(1))
+			refs(new ShareCount(1))
 		{
 			// std::cout << "SharedPtr ptr ctor.\n";
 		}
@@ -66,8 +40,8 @@ class SharedPtr
 		{
 			// std::cout << "SharedPtr copy ctor.\n";
 			if (!src.is_empty()) {
-				useCount = src.useCount;
-				(*useCount)++;
+				refs = src.refs;
+				(*refs)++;
 			}
 		}
 		SharedPtr(WeakPtr<T> const & src) : SharedPtr<T>(src.get())
@@ -75,8 +49,8 @@ class SharedPtr
 			// std::cout << "SharedPtr copy ctor.\n";
 			if (src.expired())
 				throw std::bad_weak_ptr();
-			useCount = src.getUsePtr();
-			(*useCount)++;
+			refs = src.getUsePtr();
+			(*refs)++;
 		}
 		//MOVE
 		SharedPtr(SharedPtr<T> && src) noexcept : SharedPtr<T>()
@@ -85,13 +59,13 @@ class SharedPtr
 			this->swap(src);
 		}
 		SharedPtr(UniquePtr<T> && src) noexcept : data(nullptr),
-			useCount(new RefCounter(1))
+			refs(new ShareCount(1))
 		{
 			// std::cout << "SharedPtr UniquePtr move ctor.\n";
 			this->data = src.release();
 		}
 		SharedPtr(BasePtr<T> && src) noexcept : data(nullptr),
-			useCount(new RefCounter(1))
+			refs(new ShareCount(1))
 		{
 			// std::cout << "SharedPtr UniquePtr move ctor.\n";
 			this->data = src.release();
@@ -108,8 +82,8 @@ class SharedPtr
 			// std::cout << "Copy op shared\n";
 			destructSideEffects(false);
 			this->data = rhs.get();
-			this->useCount = rhs.useCount;
-			(*rhs.useCount)++;
+			this->refs = rhs.refs;
+			(*rhs.refs)++;
 			return *this;
 		};
 		//Assignment - nullptr
@@ -117,7 +91,7 @@ class SharedPtr
 			// std::cout << "null assign op shared\n";
 			destructSideEffects(false);
 			this->release();
-			useCount = new RefCounter();
+			refs = new ShareCount();
 			return *this;
 		}
 		//Move assignment
@@ -134,7 +108,7 @@ class SharedPtr
 			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
 			destructSideEffects(false); //Bruh this decreases the value of rhs by 1 wut
 			// std::cout << "Swapping " << *data << " and " << *rhs << '\n';
-			(*useCount) = 1;
+			(*refs) = 1;
 			return *this;
 		}
 
@@ -146,23 +120,25 @@ class SharedPtr
 		//Access smart pointer state
 		T*			get() const { return data; }	//Get the stored pointer
 		explicit	operator bool() const { return (data != nullptr); }
-		long int	use_count() const noexcept { return useCount->get(); }
-		RefCounter*	getUsePtr() const noexcept { return useCount; }
-		bool		unique() const noexcept { return ((*this) && useCount->get() == 1); }
+		long int	use_count() const noexcept { return refs->getCount(); }
+		ShareCount*	getUsePtr() const noexcept { return refs; }
+		bool		unique() const noexcept { return ((*this) && refs->getCount() == 1); }
 		bool		is_empty() const noexcept { return (!(*this)); }
 
 		//Modify object state
 		T*			release() noexcept {
 			T*	result = nullptr;
 			SmartPointer::moveSwap(result, this->data); //release the pointer and set it to nullptr in the object
+			std::cout << "result = " << result << ", data = " << this->data << std::endl;
 			return result;
 		}
 		void					swap(SharedPtr<T> & other) noexcept {
 			SmartPointer::moveSwap(this->data, other.data);
-			SmartPointer::moveSwap(this->useCount, other.useCount);
+			SmartPointer::moveSwap(this->refs, other.refs);
 		}
 		void					reset() {
-			destructSideEffects(false);
+			if (refs->getCount() > 0)
+				refs->getCount() = 0;
 			T*	tmp = release(); 	//release and set to nullptr
 			if (tmp != nullptr) {	//delete depending if it's an array or not
 				// std::cout << "Deleting stored object\n";
@@ -171,29 +147,28 @@ class SharedPtr
 				else
 					delete tmp;
 			}
-			std::cout << std::boolalpha << "is NULL?" << ((*this)? " NOT NULL\n" : " NULL\n");
-			std::cout << std::boolalpha << "has 0 count?" << ((useCount->get() == 0)? " 0\n" : " NO\n");
 		}
 		void					reset(T* newData) noexcept {
 			this->reset();
 			data = newData;
+			refs++;
 		}
 
 	private:
 
 		T*				data;
-		RefCounter*		useCount;
+		ShareCount*		refs;
 		void			destructSideEffects(bool const & dtorCalled) {
-			if (useCount->get() > 1)
-				(*useCount)--;
-			// else if (useCount->get() == 1) {
-			// 	reset();
-			// 	if (dtorCalled)
-			// 		delete useCount;
-			// }
-			else if (useCount->get() == 0) {
+			if (refs->getCount() > 1)
+				(*refs)--;
+			else if (refs->getCount() == 1) {
+				reset();
 				if (dtorCalled)
-					delete useCount;
+					delete refs;
+			}
+			else if (refs->getCount() == 0) {
+				if (dtorCalled)
+					delete refs;
 			}
 		}
 };
