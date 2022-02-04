@@ -8,6 +8,9 @@
 
 namespace SmartPointer {
 
+using std::bad_weak_ptr;
+using SmartPointer::WeakPtr;
+
 class RefCounter {
 
 	public:
@@ -42,6 +45,7 @@ class SharedPtr
 
       	using element_type = typename std::remove_extent<T>::type;
 
+		//-------------CONSTRUCTORS
 		//NULL/DEFAULT
 		constexpr SharedPtr() noexcept : data(nullptr),
 			useCount(new RefCounter())
@@ -57,40 +61,24 @@ class SharedPtr
 			// std::cout << "SharedPtr ptr ctor.\n";
 		}
 
-		//COPY (CTOR + ASSIGN)
+		//COPY
 		SharedPtr(SharedPtr<T> const & src) noexcept : SharedPtr<T>(src.get())
 		{
 			// std::cout << "SharedPtr copy ctor.\n";
-			if (src.get() != nullptr && src.use_count() != 0) {
+			if (!src.is_empty()) {
 				useCount = src.useCount;
 				(*useCount)++;
 			}
 		}
-		//Copy from WEAK => see after WeakPtr is implemented
-		/*
-		explicit SharedPtr(WeakPtr<T> const & src) {
-			== copy ctor but throw bad_weak_ptr exception when WeakPtr has expired.
+		SharedPtr(WeakPtr<T> const & src) : SharedPtr<T>(src.get())
+		{
+			// std::cout << "SharedPtr copy ctor.\n";
+			if (src.expired())
+				throw std::bad_weak_ptr();
+			useCount = src.getUsePtr();
+			(*useCount)++;
 		}
-		*/
-		SharedPtr<T> &	operator=(SharedPtr<T> const & rhs) noexcept {
-			// std::cout << "Copy op shared\n";
-			destructSideEffects(false);
-			this->data = rhs.get();
-			this->useCount = rhs.useCount;
-			(*rhs.useCount)++;
-			return *this;
-		};
-		//Assignment - nullptr
-		SharedPtr<T> &	operator=(std::nullptr_t) noexcept {
-			// std::cout << "null assign op shared\n";
-			destructSideEffects(false);
-			this->release();
-			useCount = new RefCounter();
-			return *this;
-		}
-
-
-		//MOVE (CTOR + ASSIGN)
+		//MOVE
 		SharedPtr(SharedPtr<T> && src) noexcept : SharedPtr<T>()
 		{
 			// std::cout << "SharedPtr move ctor.\n";
@@ -108,6 +96,31 @@ class SharedPtr
 			// std::cout << "SharedPtr UniquePtr move ctor.\n";
 			this->data = src.release();
 		}
+
+		//DESTRUCTOR
+		~SharedPtr() {
+			// std::cout << "SharedPtr dtor.\n";
+			destructSideEffects(true);
+		}
+
+		//-------------OPERATOR=
+		SharedPtr<T> &	operator=(SharedPtr<T> const & rhs) noexcept {
+			// std::cout << "Copy op shared\n";
+			destructSideEffects(false);
+			this->data = rhs.get();
+			this->useCount = rhs.useCount;
+			(*rhs.useCount)++;
+			return *this;
+		};
+		//Assignment - nullptr
+		SharedPtr<T> &	operator=(std::nullptr_t) noexcept {
+			// std::cout << "null assign op shared\n";
+			destructSideEffects(false);
+			this->release();
+			useCount = new RefCounter();
+			return *this;
+		}
+		//Move assignment
 		SharedPtr<T> &		operator=(SharedPtr<T> && rhs) noexcept { //Move from other SharedPtr
 			// std::cout << "Move op shared\n";
 			destructSideEffects(false);
@@ -125,21 +138,18 @@ class SharedPtr
 			return *this;
 		}
 
-		//DESTRUCTOR
-		~SharedPtr() {
-			// std::cout << "SharedPtr dtor.\n";
-			destructSideEffects(true);
-		}
-
+		//-------------MEMBER FUNCTIONS
 		//Access operators
 		T*			operator->() const { return data; }
 		T&			operator*() const { return *data; }
 
 		//Access smart pointer state
 		T*			get() const { return data; }	//Get the stored pointer
-		explicit				operator bool() const { return (data != nullptr); }
-		long int				use_count() const noexcept { return useCount->get(); }
-		bool					unique() const noexcept { return ((*this) && useCount->get() == 1); }
+		explicit	operator bool() const { return (data != nullptr); }
+		long int	use_count() const noexcept { return useCount->get(); }
+		RefCounter*	getUsePtr() const noexcept { return useCount; }
+		bool		unique() const noexcept { return ((*this) && useCount->get() == 1); }
+		bool		is_empty() const noexcept { return (!(*this)); }
 
 		//Modify object state
 		T*			release() noexcept {
@@ -161,6 +171,8 @@ class SharedPtr
 				else
 					delete tmp;
 			}
+			std::cout << std::boolalpha << "is NULL?" << ((*this)? " NOT NULL\n" : " NULL\n");
+			std::cout << std::boolalpha << "has 0 count?" << ((useCount->get() == 0)? " 0\n" : " NO\n");
 		}
 		void					reset(T* newData) noexcept {
 			this->reset();
@@ -174,11 +186,11 @@ class SharedPtr
 		void			destructSideEffects(bool const & dtorCalled) {
 			if (useCount->get() > 1)
 				(*useCount)--;
-			else if (useCount->get() == 1) {
-				reset();
-				if (dtorCalled)
-					delete useCount;
-			}
+			// else if (useCount->get() == 1) {
+			// 	reset();
+			// 	if (dtorCalled)
+			// 		delete useCount;
+			// }
 			else if (useCount->get() == 0) {
 				if (dtorCalled)
 					delete useCount;
