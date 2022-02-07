@@ -17,8 +17,7 @@ class ShareCount {
 		void	reset() { m_count = 0; }
 		long int &	getCount() { return m_count; }
 		long int &	getWeak() { return m_weakLinks; }
-        bool    noRefs() { return (m_count == 0 && m_weakLinks == 0); }
-        bool    oneRef() { return (m_count == 1 && m_weakLinks == 0); }
+        bool    noRefs() { return (m_count + m_weakLinks < 2); }
 		void	operator++() { m_count++; }     //++Sharecount
 		void	operator++(int) { m_count++; }  //Sharecount++
 		void	operator--() { m_count--; }

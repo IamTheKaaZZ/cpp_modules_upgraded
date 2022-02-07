@@ -41,7 +41,7 @@ class WeakPtr
 		{
 			// std::cout << "WeakPtr copy ctor.\n";
 			if (!src.is_empty()) {
-				data = src.get();
+				data = &src.get();
 				refs = src.getUsePtr();
 				safetyCopy = new T(*src);
 				refs->getWeak()++;
@@ -67,38 +67,41 @@ class WeakPtr
 
 		//-------------OPERATOR=
 		WeakPtr<T> &	operator=(WeakPtr<T> const & rhs) noexcept {
-			std::cout << "Copy op weak\n";
+			// std::cout << "Copy op weak\n";
 			WeakPtr<T> tmp(rhs);
 			tmp.swap(*this);
 			return *this;
 		};
 		WeakPtr<T> &	operator=(SharedPtr<T> const & rhs) noexcept {
-			std::cout << "Copy op shared\n";
+			// std::cout << "Copy op shared\n";
 			WeakPtr<T> tmp(rhs);
 			tmp.swap(*this);
 			return *this;
 		};
 		WeakPtr<T> &		operator=(WeakPtr<T> && rhs) noexcept { //Move from other WeakPtr
-			std::cout << "Move op shared\n";
+			// std::cout << "Move op shared\n";
 			WeakPtr<T> tmp(std::move(rhs));
 			tmp.swap(*this);
 			return *this;
 		}
 
 		//Access smart pointer state
-		T*						get() const { return data; }	//Get the stored pointer
-		explicit				operator bool() const { return (data != nullptr); }
+		T*						get() { return *data; }	//Get the stored pointer
+		explicit				operator bool() const { return (data != nullptr && *data != nullptr); }
 		long int				use_count() const noexcept { return refs->getCount(); }
 		ShareCount*				getUsePtr() const noexcept { return refs; }
 		bool					expired() const noexcept {
-			return (use_count() == 0); 
+			return (refs->noRefs() && data != nullptr && *data == nullptr); 
 		}
 		SharedPtr<T>			lock() const noexcept {
 			if (this->expired()) return SharedPtr<T>();
+			// std::cout << "Not expired, creating a new shared ptr\n";
 			SharedPtr<T>	result(safetyCopy);
-			result.getUsePtr()->getCount()++;
 			this->refs->getCount()++;
-			return SharedPtr<T>(safetyCopy);
+			this->refs->getWeak()++;
+			result.getUsePtr()->getCount() = refs->getCount();
+			result.getUsePtr()->getWeak() = refs->getWeak();
+			return result;
 		}
 		void					swap(WeakPtr<T> & other) noexcept {
 			SmartPointer::moveSwap(this->data, other.data);
@@ -122,7 +125,7 @@ class WeakPtr
 
 	private:
 
-		T*				data;
+		T* const *		data;
 		T*				safetyCopy = nullptr;
 		ShareCount*		refs;
 		T*				release() noexcept {

@@ -118,7 +118,7 @@ class SharedPtr
 		T&			operator*() const { return *data; }
 
 		//Access smart pointer state
-		T*			get() const { return data; }	//Get the stored pointer
+		T* const &	get() const { return data; }	//Get the stored pointer
 		explicit	operator bool() const { return (data != nullptr); }
 		long int	use_count() const noexcept { return refs->getCount(); }
 		ShareCount*	getUsePtr() const noexcept { return refs; }
@@ -129,7 +129,7 @@ class SharedPtr
 		T*			release() noexcept {
 			T*	result = nullptr;
 			SmartPointer::moveSwap(result, this->data); //release the pointer and set it to nullptr in the object
-			std::cout << "result = " << result << ", data = " << this->data << std::endl;
+			// std::cout << "result = " << result << ", data = " << this->data << std::endl;
 			return result;
 		}
 		void					swap(SharedPtr<T> & other) noexcept {
@@ -146,6 +146,7 @@ class SharedPtr
 					delete 	[] tmp;
 				else
 					delete tmp;
+				tmp = nullptr;
 			}
 		}
 		void					reset(T* newData) noexcept {
@@ -154,7 +155,7 @@ class SharedPtr
 			refs++;
 		}
 
-	private:
+	protected:
 
 		T*				data;
 		ShareCount*		refs;
