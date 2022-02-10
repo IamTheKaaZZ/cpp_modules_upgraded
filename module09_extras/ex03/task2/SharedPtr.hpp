@@ -114,7 +114,7 @@ class SharedPtr
 
 		//-------------MEMBER FUNCTIONS
 		//Access operators
-		T*			operator->() const { return data; }
+		T*			operator->() { return data; }
 		T&			operator*() const { return *data; }
 
 		//Access smart pointer state

@@ -20,7 +20,7 @@ cc_library(
 
 cc_library(
     name = "DLL",
-    srcs = ["DoubleLL.cpp"],
+    srcs = [],
     hdrs = ["DoubleLL.hpp"],
 )
 

@@ -9,33 +9,32 @@
 using namespace SmartPointer;
 
 template<class T>
-class Node {
+struct Node {
 
 	public:
 
 		using SNodePtr = SharedPtr<Node<T>>;
 		using WNodePtr = WeakPtr<Node<T>>;
 
-		Node() : data(nullptr) {};
-		Node(T* data) : data(data) {}
+		Node() = delete;
+		Node(T data) : data(data) {
+			while (next) {
+				prev = next->next;
+				next = prev.lock();
+			}
+		};
 		Node(Node<T> const & src) = default;
 
-		T const *			getData() const { return data; }
-		SNodePtr const &	next() const { return next; }
-		WNodePtr const &	prev() const { return prev; }
-		void				setNext(SNodePtr const & nextNode) {
-			next = nextNode;
-		}
-		void				setPrev(SNodePtr const & prevNode) {
-			prev = prevNode;
-		}
-
-	private:
-
-		T*			data;
+		T			data;
 		SNodePtr	next;
 		WNodePtr	prev;
 
+};
+
+template<class T>
+std::ostream &			operator<<( std::ostream & o, Node<T> & i ) {
+	o << i.data;
+	return o;
 };
 
 template<class T>
@@ -47,106 +46,75 @@ class DoubleLL
 		using SNodePtr = SharedPtr<Node<T>>;
 		using WNodePtr = WeakPtr<Node<T>>;
 
-		class Iterator {
-
-			public:
-
-				using iterator_category = std::bidirectional_iterator_tag;
-   	 			using difference_type   = std::ptrdiff_t;
-    			using value_type        = T;
-    			using pointer           = T*;  // or also value_type*
-    			using reference         = T&;  // or also value_type&
-
-				Iterator(pointer ptr) : m_ptr(ptr) {};
-
-				reference	operator*() const { return *m_ptr; }
-				pointer		operator->() { return m_ptr; }
-				//prefix incr
-				Iterator &	operator++() { m_ptr++; return *this; }
-				//prefix incr
-				Iterator	operator++(int) {
-					Iterator	tmp = *this;
-					++(*this);
-					return tmp;
-				}
-				friend bool operator==(const Iterator& a, const Iterator& b) {
-					return (a.m_ptr == b.m_ptr);
-				};
-    			friend bool operator!=(const Iterator& a, const Iterator& b) {
-					return (a.m_ptr != b.m_ptr);
-				};
-			
-			private:
-
-				pointer	m_ptr;
-
+		DoubleLL() : size(0) {};
+		~DoubleLL() {
+			while (head) head = head->next;
 		};
 
-		class ConstIterator {
-
-			public:
-
-				using iterator_category = std::bidirectional_iterator_tag;
-   	 			using difference_type   = std::ptrdiff_t;
-    			using value_type        = T;
-    			using pointer           = T*;  // or also value_type*
-    			using reference         = T&;  // or also value_type&
-
-				ConstIterator(pointer ptr) : m_ptr(ptr) {};
-
-				reference const	operator*() const { return *m_ptr; }
-				pointer		operator->() { return m_ptr; }
-				//prefix incr
-				ConstIterator &	operator++() { m_ptr++; return *this; }
-				//prefix incr
-				ConstIterator	operator++(int) {
-					ConstIterator	tmp = *this;
-					++(*this);
-					return tmp;
-				}
-				friend bool operator==(const ConstIterator& a, const ConstIterator& b) {
-					return (a.m_ptr == b.m_ptr);
-				};
-    			friend bool operator!=(const ConstIterator& a, const ConstIterator& b) {
-					return (a.m_ptr != b.m_ptr);
-				};
-			
-			private:
-
-				pointer	m_ptr;
-
-		};
-
-
-		DoubleLL() = default;
-		DoubleLL(Node const & head) : head(head) {};
-		DoubleLL( DoubleLL const & src ) = default;
-		~DoubleLL() = default;
-
-		DoubleLL &		operator=( DoubleLL const & rhs ) = default;
-		Iterator		begin() { return Iterator(&head); }
-		Iterator		end() { return Iterator(&(tail.next())); }
-		ConstIterator	cbegin() { return ConstIterator(&head); }
-		ConstIterator	cend() { return ConstIterator(&(*tail.next())); }
-		void			insertFront(Node<T> const & node) {
-
+		SNodePtr &			begin() { return head; }
+		SNodePtr &			end() { return tail.lock(); }
+		SNodePtr const &	cbegin() const { return head; }
+		SNodePtr const &	cend() const { return tail.lock(); }
+		void			insertFront(T const & data) {
+			Node<T>*	nPtr = new Node<T>(data);
+			auto newNode = SNodePtr(nPtr);
+			newNode->next = head;
+			if (!head) {
+				head = newNode;
+				tail = newNode;
+			}
+			else {
+				head->prev = newNode;
+				head = newNode;
+			}
+			size++;
 		}
-		void			insertBack(Node<T> const & node) {
-
+		void			insertBack(T const & data) {
+			if (!head) insertFront(data);
+			else {
+				Node<T>*	nPtr = new Node<T>(data);
+				auto newNode = SNodePtr(nPtr);
+				auto sPtr = tail.lock();
+				sPtr->next = newNode;
+				sPtr->prev = tail;
+				tail = newNode;
+			}
+			size++;
 		}
-		void			insertBefore(Node<T> const & node) {
-
-		}
-		void			insertAfter(Node<T> const & node) {
-
+		void			insertAfter(SNodePtr prevNode, T const & insert) {
+			if (!prevNode) throw std::invalid_argument();
+			Node<T>*	nPtr = new Node<T>(insert);
+			auto newNode = SNodePtr(nPtr);
+			newNode->next = prevNode->next;
+			prevNode->next = newNode;
+			newNode->prev = prevNode;
+			if (newNode->next)
+				newNode->next->prev = newNode;
+			size++;
 		}
 		void			deleteFirst() {
-
+			auto sPtr = head;
+			head = head->next;
+			sPtr = nullptr;
+			size--;
 		}
-		void			deleteFirst() {
-
+		void			deleteLast() {
+			auto wPtr = tail;
+			tail = tail->prev;
+			wPtr.reset();
+			size--;
 		}
 		void			deleteAt(T const & data) {
+			auto sPtr = head;
+			while (sPtr && *sPtr != data) {
+				sPtr = sPtr->next;
+			}
+			if (!sPtr) throw std::invalid_argument();
+			else {
+				sPtr->next = sPtr->prev;
+				sPtr = nullptr;
+				size--;
+			}
 
 		}
 
@@ -154,19 +122,24 @@ class DoubleLL
 
 		SNodePtr	head;
 		WNodePtr	tail;
-
-		WNodePtr const &	findTail() const {
-			if (head == nullptr) return head;
-			Node<T>	tmp = head;
-			while (tmp.next() != nullptr) {
-				tmp = tmp.next();
-			}
-			return WeakPtr<T>
-		}
+		int			size;
 
 };
 
 template<class T>
-std::ostream &			operator<<( std::ostream & o, DoubleLL<T> const & i );
+std::ostream &			operator<<( std::ostream & o, DoubleLL<T> const & i ) {
+	SharedPtr<Node<T>> it = i.cbegin();
+	if (!it) {
+		o << "The list is empty.\n";
+	}
+	else {
+		while (it) {
+			o << *it;
+			o << it;
+			it = it->next;
+		}
+	}
+	return o;
+};
 
 #endif /* ******************************************************** DOUBLELL_H */

@@ -4,8 +4,11 @@
 # include <cstddef>
 # include <iostream>
 # include <string>
+# include <stdexcept>
+# include <memory>
 # include "UniquePtr.hpp"
 # include "ShareCount.hpp"
+# include "SmartPointer.hpp"
 
 namespace SmartPointer {
 
@@ -114,8 +117,8 @@ class SharedPtr
 
 		//-------------MEMBER FUNCTIONS
 		//Access operators
-		T*			operator->() const { return data; }
-		T&			operator*() const { return *data; }
+		T*			operator->() const { return get(); }
+		T&			operator*() const { return *get(); }
 
 		//Access smart pointer state
 		T* const &	get() const { return data; }	//Get the stored pointer
@@ -155,7 +158,7 @@ class SharedPtr
 			refs++;
 		}
 
-	protected:
+	private:
 
 		T*				data;
 		ShareCount*		refs;
