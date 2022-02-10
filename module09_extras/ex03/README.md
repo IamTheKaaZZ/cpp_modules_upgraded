@@ -1,4 +1,4 @@
-# Clasical (new and delete)
+# Classical (new and delete)
 
 - See earlier modules ;) 
 
